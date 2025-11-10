@@ -44,6 +44,7 @@ import { SystemConfigModule } from './system-config/system-config.module';
 
 // Security Module
 import { SecurityModule } from './shared/security.module';
+import { ApiExtensionsModule } from './shared/api-extensions.module';
 
 // Entities for Tasks
 import { AnalyticsEvent, AnalyticsEventSchema } from './analytics/entities/analytics.entity';
@@ -123,6 +124,9 @@ import { AiBotGateway } from './ai-bot/ai-bot.gateway';
 
     // Security Module (MUST BE FIRST)
     SecurityModule,
+
+    // API Extensions (Bulk, Reports, Progress, Instructor Dashboard)
+    ApiExtensionsModule,
 
     // Feature modules
     AuthModule,
