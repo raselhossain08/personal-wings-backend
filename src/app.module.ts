@@ -42,6 +42,9 @@ import { SupportModule } from './support/support.module';
 import { AiBotModule } from './ai-bot/ai-bot.module';
 import { SystemConfigModule } from './system-config/system-config.module';
 
+// Security Module
+import { SecurityModule } from './shared/security.module';
+
 // Entities for Tasks
 import { AnalyticsEvent, AnalyticsEventSchema } from './analytics/entities/analytics.entity';
 
@@ -117,6 +120,9 @@ import { AiBotGateway } from './ai-bot/ai-bot.gateway';
       }),
       inject: [ConfigService],
     }),
+
+    // Security Module (MUST BE FIRST)
+    SecurityModule,
 
     // Feature modules
     AuthModule,

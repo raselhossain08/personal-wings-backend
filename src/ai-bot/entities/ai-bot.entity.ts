@@ -43,7 +43,7 @@ export class BotConversation extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   userId: MongooseSchema.Types.ObjectId;
 
-  @Prop({ type: String, unique: true, required: true })
+  @Prop({ type: String, required: true })
   sessionId: string;
 
   @Prop({ type: String, enum: Object.values(ConversationStatus), default: ConversationStatus.ACTIVE })
@@ -87,7 +87,7 @@ export const BotConversationSchema = SchemaFactory.createForClass(BotConversatio
 
 // Create indexes
 BotConversationSchema.index({ userId: 1, status: 1 });
-BotConversationSchema.index({ sessionId: 1 });
+BotConversationSchema.index({ sessionId: 1 }, { unique: true });
 BotConversationSchema.index({ createdAt: -1 });
 
 // Knowledge base for bot responses

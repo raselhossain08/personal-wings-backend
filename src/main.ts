@@ -5,19 +5,63 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { ResponseInterceptor } from './shared/interceptors/response.interceptor';
+import { SecurityMiddleware } from './shared/middleware/security.middleware';
+import { HelmetMiddleware } from './shared/middleware/helmet.middleware';
+const compression = require('compression');
+const hpp = require('hpp');
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log'], // Production logging
+  });
   const configService = app.get(ConfigService);
+
+  // ============ SECURITY LAYER (Configurable) ============
+  const securityEnabled = configService.get('SECURITY_ENABLED', 'false') === 'true';
+  
+  if (securityEnabled) {
+    console.log('🔒 Security features ENABLED');
+    
+    // 1. Helmet Security Headers
+    const helmetMiddleware = new HelmetMiddleware();
+    app.use((req, res, next) => helmetMiddleware.use(req, res, next));
+    
+    // 2. Security Middleware (Custom)
+    const securityMiddleware = new SecurityMiddleware();
+    app.use((req, res, next) => securityMiddleware.use(req, res, next));
+    
+    // 3. HTTP Parameter Pollution Prevention
+    app.use(hpp());
+    
+    // 4. Response Compression
+    app.use(compression());
+  } else {
+    console.log('⚠️  Security features DISABLED - Enable from admin panel');
+  }
 
   // Global filters and interceptors
   app.useGlobalFilters(new GlobalExceptionFilter(configService));
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  // Enable CORS
+  // Enable CORS with strict settings
+  const allowedOrigins = configService.get('CORS_ORIGIN', 'http://localhost:3000').split(',');
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN', 'http://localhost:3000'),
-    credentials: configService.get('CORS_CREDENTIALS', true),
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        callback(null, true);
+      } else {
+        console.warn(`[SECURITY] Blocked CORS request from: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
+    exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Limit'],
+    maxAge: 86400, // 24 hours
   });
 
   // Global validation

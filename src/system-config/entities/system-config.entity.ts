@@ -12,7 +12,7 @@ export enum ConfigCategory {
 
 @Schema({ timestamps: true })
 export class SystemConfig extends Document {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   key: string;
 
   @Prop({ default: '' })
@@ -49,6 +49,6 @@ export class SystemConfig extends Document {
 export const SystemConfigSchema = SchemaFactory.createForClass(SystemConfig);
 
 // Create indexes
-SystemConfigSchema.index({ key: 1 });
+SystemConfigSchema.index({ key: 1 }, { unique: true });
 SystemConfigSchema.index({ category: 1 });
 SystemConfigSchema.index({ isActive: 1 });

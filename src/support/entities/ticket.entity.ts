@@ -29,7 +29,7 @@ export enum TicketCategory {
 
 @Schema({ timestamps: true })
 export class Ticket extends Document {
-  @Prop({ type: String, required: true, unique: true })
+  @Prop({ type: String, required: true })
   ticketNumber: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
@@ -84,7 +84,7 @@ export class Ticket extends Document {
 export const TicketSchema = SchemaFactory.createForClass(Ticket);
 
 // Indexes
-TicketSchema.index({ ticketNumber: 1 });
+TicketSchema.index({ ticketNumber: 1 }, { unique: true });
 TicketSchema.index({ userId: 1, status: 1 });
 TicketSchema.index({ status: 1, priority: 1 });
 TicketSchema.index({ category: 1 });
