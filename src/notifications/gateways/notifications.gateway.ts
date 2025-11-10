@@ -12,7 +12,7 @@ import { Logger, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { NotificationsService } from '../notifications.service';
-import { WsJwtGuard } from '../../../src/auth/guards/ws-jwt.guard';
+import { WsJwtGuard } from '../../auth/guards/ws-jwt.guard';
 
 @WebSocketGateway({
   cors: {

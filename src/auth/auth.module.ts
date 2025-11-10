@@ -40,6 +40,6 @@ import { SecurityLog, SecurityLogSchema } from './entities/security-log.entity';
   ],
   controllers: [AuthController],
   providers: [AuthService, SessionService, JwtStrategy],
-  exports: [AuthService, SessionService],
+  exports: [AuthService, SessionService, JwtModule],
 })
 export class AuthModule {}

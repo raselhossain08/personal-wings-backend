@@ -9,7 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
-import { WsJwtGuard } from '../../../src/auth/guards/ws-jwt.guard';
+import { WsJwtGuard } from '../../auth/guards/ws-jwt.guard';
 import { ChatService } from '../chat.service';
 
 @WebSocketGateway({
@@ -109,7 +109,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         .emit('new_message', message);
 
       // Notify other participants
-      const conversation = await this.chatService.getConversation(data.conversationId);
+      const conversation = await this.chatService.getConversation(data.conversationId, userId);
       conversation.participants.forEach(participant => {
         if (participant.toString() !== userId) {
           this.sendToUser(participant.toString(), 'conversation_updated', {
@@ -138,8 +138,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const conversation = await this.chatService.createConversation({
         participantIds: allParticipants,
         title: data.title,
-        createdBy: userId,
-      });
+      }, userId);
 
       // Notify all participants
       allParticipants.forEach(participantId => {

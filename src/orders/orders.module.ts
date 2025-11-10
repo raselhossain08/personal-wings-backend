@@ -4,7 +4,7 @@ import { OrdersService } from './orders.service';
 import { OrdersController } from './entities/orders.controller';
 import { Order, OrderSchema } from './entities/order.entity';
 import { CoursesModule } from '../courses/courses.module';
-import { UsersModule } from '../../src/users/users.module';
+import { UsersModule } from '../users/users.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
@@ -16,6 +16,6 @@ import { NotificationsModule } from '../notifications/notifications.module';
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
-  exports: [OrdersService],
+  exports: [OrdersService, MongooseModule],
 })
 export class OrdersModule {}

@@ -1,24 +1,39 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 
 @Injectable()
 export class StripeService {
-  private stripe: Stripe;
+  private stripe: Stripe | null = null;
+  private readonly logger = new Logger(StripeService.name);
+  private readonly enabled: boolean;
 
   constructor(private configService: ConfigService) {
     const secretKey = configService.get<string>('STRIPE_SECRET_KEY');
     if (!secretKey) {
-      throw new Error('STRIPE_SECRET_KEY is not defined');
+      this.logger.warn('STRIPE_SECRET_KEY is not configured. Stripe payments will be disabled.');
+      this.enabled = false;
+      return;
     }
+    
+    this.enabled = true;
     this.stripe = new Stripe(secretKey, {
       apiVersion: '2025-10-29.clover',
     });
+    this.logger.log('Stripe service initialized successfully');
+  }
+
+  private checkEnabled() {
+    if (!this.enabled || !this.stripe) {
+      throw new BadRequestException('Stripe payment service is not configured. Please contact support.');
+    }
   }
 
   async createPaymentIntent(amount: number, currency: string, metadata: any = {}) {
+    this.checkEnabled();
+    
     try {
-      const paymentIntent = await this.stripe.paymentIntents.create({
+      const paymentIntent = await this.stripe!.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
         currency,
         metadata,
@@ -38,8 +53,10 @@ export class StripeService {
   }
 
   async confirmPayment(paymentIntentId: string) {
+    this.checkEnabled();
+    
     try {
-      const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
+      const paymentIntent = await this.stripe!.paymentIntents.retrieve(paymentIntentId);
       
       if (paymentIntent.status === 'succeeded') {
         return {
@@ -50,7 +67,7 @@ export class StripeService {
       }
 
       // If not succeeded, confirm the payment
-      const confirmedIntent = await this.stripe.paymentIntents.confirm(paymentIntentId);
+      const confirmedIntent = await this.stripe!.paymentIntents.confirm(paymentIntentId);
       
       return {
         success: confirmedIntent.status === 'succeeded',
@@ -63,6 +80,8 @@ export class StripeService {
   }
 
   async createCustomer(email: string, name: string, paymentMethodId?: string) {
+    this.checkEnabled();
+    
     try {
       const customerData: any = {
         email,
@@ -76,10 +95,10 @@ export class StripeService {
         };
       }
 
-      const customer = await this.stripe.customers.create(customerData);
+      const customer = await this.stripe!.customers.create(customerData);
       
       if (paymentMethodId) {
-        await this.stripe.paymentMethods.attach(paymentMethodId, {
+        await this.stripe!.paymentMethods.attach(paymentMethodId, {
           customer: customer.id,
         });
       }
@@ -91,8 +110,10 @@ export class StripeService {
   }
 
   async createSubscription(customerId: string, priceId: string, metadata: any = {}) {
+    this.checkEnabled();
+    
     try {
-      const subscription = await this.stripe.subscriptions.create({
+      const subscription = await this.stripe!.subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
         metadata,
@@ -106,9 +127,11 @@ export class StripeService {
   }
 
   async createInvoice(customerId: string, amount: number, description: string) {
+    this.checkEnabled();
+    
     try {
       // Create invoice item first (Stripe API v2025 requires this)
-      await this.stripe.invoiceItems.create({
+      await this.stripe!.invoiceItems.create({
         customer: customerId,
         amount: Math.round(amount * 100),
         currency: 'usd',
@@ -116,7 +139,7 @@ export class StripeService {
       });
 
       // Then create the invoice
-      const invoice = await this.stripe.invoices.create({
+      const invoice = await this.stripe!.invoices.create({
         customer: customerId,
         description,
       });
@@ -128,12 +151,14 @@ export class StripeService {
   }
 
   async handleWebhook(payload: any, signature: string) {
+    this.checkEnabled();
+    
     try {
       const webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
       if (!webhookSecret) {
         throw new BadRequestException('STRIPE_WEBHOOK_SECRET is not configured');
       }
-      const event = this.stripe.webhooks.constructEvent(
+      const event = this.stripe!.webhooks.constructEvent(
         payload,
         signature,
         webhookSecret,
@@ -146,13 +171,15 @@ export class StripeService {
   }
 
   async refundPayment(paymentIntentId: string, amount?: number) {
+    this.checkEnabled();
+    
     try {
       const refundData: any = { payment_intent: paymentIntentId };
       if (amount) {
         refundData.amount = Math.round(amount * 100);
       }
 
-      const refund = await this.stripe.refunds.create(refundData);
+      const refund = await this.stripe!.refunds.create(refundData);
       return refund;
     } catch (error) {
       throw new BadRequestException(`Refund failed: ${error.message}`);

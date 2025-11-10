@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../../../src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 import { Course } from '../../courses/entities/course.entity';
 
 export enum OrderStatus {

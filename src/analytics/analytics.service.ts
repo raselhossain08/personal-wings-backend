@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { AnalyticsEvent } from './entities/analytics.entity';
 import { AnalyticsQueryDto, AnalyticsPeriod } from './dto/analytics-query.dto';
 import { CoursesService } from '../courses/courses.service';
-import { UsersService } from '../../src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { OrdersService } from '../orders/orders.service';
 
 @Injectable()

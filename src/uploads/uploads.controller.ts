@@ -13,10 +13,10 @@ import {
   Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { UploadsService } from './uploads.service';
 import { UploadFileDto } from './dto/upload-file.dto';
-import { JwtAuthGuard } from '../../src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { File } from './entities/file.entity';
 import { FileType } from './entities/file.entity';
 
@@ -59,7 +59,28 @@ export class UploadsController {
 
   @Post('upload-from-url')
   @ApiOperation({ summary: 'Upload a file from URL' })
-  @ApiResponse({ status: 201, description: 'File uploaded successfully', type: File })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['url'],
+      properties: {
+        url: { type: 'string', description: 'URL of the file to upload' },
+        uploadFileDto: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', enum: Object.values(FileType) },
+            description: { type: 'string' },
+            tags: { type: 'array', items: { type: 'string' } },
+            associatedEntity: { type: 'string' },
+            entityType: { type: 'string' },
+            visibility: { type: 'string' },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'File uploaded successfully from URL', type: File })
+  @ApiResponse({ status: 400, description: 'Invalid URL or file' })
   async uploadFromUrl(
     @Body() body: { url: string; uploadFileDto: UploadFileDto },
     @Req() req,
@@ -68,7 +89,10 @@ export class UploadsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get user files' })
+  @ApiOperation({ summary: 'Get user files with pagination' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page', example: 20 })
+  @ApiQuery({ name: 'type', required: false, enum: FileType, description: 'Filter by file type' })
   @ApiResponse({ status: 200, description: 'List of user files', type: [File] })
   async getUserFiles(
     @Req() req,
@@ -81,14 +105,28 @@ export class UploadsController {
 
   @Get('storage-stats')
   @ApiOperation({ summary: 'Get user storage statistics' })
-  @ApiResponse({ status: 200, description: 'Storage statistics' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Storage statistics including total size and file count',
+    schema: {
+      type: 'object',
+      properties: {
+        totalFiles: { type: 'number' },
+        totalSize: { type: 'number' },
+        byType: { type: 'object' },
+      },
+    },
+  })
   async getStorageStats(@Req() req) {
     return this.uploadsService.getStorageStats(req.user.id);
   }
 
   @Get('entity/:entityType/:entityId')
-  @ApiOperation({ summary: 'Get files by entity' })
+  @ApiOperation({ summary: 'Get files by associated entity' })
+  @ApiParam({ name: 'entityType', description: 'Type of entity (e.g., course, product, user)', example: 'course' })
+  @ApiParam({ name: 'entityId', description: 'ID of the entity', example: '507f1f77bcf86cd799439011' })
   @ApiResponse({ status: 200, description: 'List of entity files', type: [File] })
+  @ApiResponse({ status: 404, description: 'Entity not found' })
   async getFilesByEntity(
     @Param('entityType') entityType: string,
     @Param('entityId') entityId: string,
@@ -97,15 +135,30 @@ export class UploadsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get file by ID' })
+  @ApiOperation({ summary: 'Get file details by ID' })
+  @ApiParam({ name: 'id', description: 'File ID', example: '507f1f77bcf86cd799439011' })
   @ApiResponse({ status: 200, description: 'File details', type: File })
+  @ApiResponse({ status: 404, description: 'File not found' })
   async getFile(@Param('id') id: string) {
     return this.uploadsService.getFileById(id);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Update file' })
-  @ApiResponse({ status: 200, description: 'File updated', type: File })
+  @ApiOperation({ summary: 'Update file metadata' })
+  @ApiParam({ name: 'id', description: 'File ID', example: '507f1f77bcf86cd799439011' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        description: { type: 'string' },
+        tags: { type: 'array', items: { type: 'string' } },
+        visibility: { type: 'string', enum: ['public', 'private'] },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'File metadata updated', type: File })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not file owner' })
+  @ApiResponse({ status: 404, description: 'File not found' })
   async updateFile(
     @Param('id') id: string,
     @Body() updateData: Partial<File>,
@@ -115,15 +168,20 @@ export class UploadsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete file' })
-  @ApiResponse({ status: 200, description: 'File deleted' })
+  @ApiOperation({ summary: 'Delete file permanently' })
+  @ApiParam({ name: 'id', description: 'File ID', example: '507f1f77bcf86cd799439011' })
+  @ApiResponse({ status: 200, description: 'File deleted successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not file owner' })
+  @ApiResponse({ status: 404, description: 'File not found' })
   async deleteFile(@Param('id') id: string, @Req() req) {
     return this.uploadsService.deleteFile(id, req.user.id);
   }
 
   @Post(':id/download')
-  @ApiOperation({ summary: 'Increment download count' })
+  @ApiOperation({ summary: 'Track file download and increment counter' })
+  @ApiParam({ name: 'id', description: 'File ID', example: '507f1f77bcf86cd799439011' })
   @ApiResponse({ status: 200, description: 'Download count incremented' })
+  @ApiResponse({ status: 404, description: 'File not found' })
   async incrementDownloadCount(@Param('id') id: string) {
     return this.uploadsService.incrementDownloadCount(id);
   }

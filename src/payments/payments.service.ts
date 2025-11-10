@@ -11,7 +11,7 @@ import { Transaction, TransactionStatus, TransactionType } from './entities/tran
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
 import { Order, OrderStatus, PaymentMethod } from '../orders/entities/order.entity';
-import { User } from '../../src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class PaymentsService {

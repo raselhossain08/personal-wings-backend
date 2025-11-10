@@ -1,7 +1,7 @@
 import { Controller, Post, Body, UseGuards, Req, Get, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
-import { JwtAuthGuard } from '../../src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
 

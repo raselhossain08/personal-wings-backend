@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Notification, NotificationType, NotificationStatus } from './entities/notification.entity';
 import { MailService } from './mail.service';
-import { User } from '../../src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class NotificationsService {
@@ -190,7 +190,7 @@ export class NotificationsService {
     }
 
     const emailSent = await this.mailService.sendBulkEmail(
-      [user.email],
+      [user],
       notification.title,
       notification.template || 'default',
       {
@@ -202,7 +202,7 @@ export class NotificationsService {
       }
     );
 
-    if (emailSent.success === 0) {
+    if (!emailSent) {
       throw new Error('Failed to send email');
     }
 

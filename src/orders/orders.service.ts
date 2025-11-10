@@ -5,7 +5,7 @@ import { Order, OrderStatus, PaymentMethod } from './entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { CoursesService } from '../courses/courses.service';
-import { UsersService } from '../../src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()

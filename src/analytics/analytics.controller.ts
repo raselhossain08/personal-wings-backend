@@ -1,10 +1,10 @@
 import { Controller, Get, UseGuards, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service.js';
-import { JwtAuthGuard } from '../../src/auth/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../../src/auth/guards/roles.guard.js';
-import { Roles } from '../../src/shared/decorators/roles.decorator.js';
-import { UserRole } from '../../src/users/entities/user.entity.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { Roles } from '../shared/decorators/roles.decorator.js';
+import { UserRole } from '../users/entities/user.entity.js';
 import { AnalyticsPeriod } from './dto/analytics-query.dto.js';
 
 @ApiTags('Analytics')

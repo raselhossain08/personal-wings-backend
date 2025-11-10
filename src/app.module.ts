@@ -8,22 +8,51 @@ import { MailerModule } from '@nestjs-modules/mailer';
 // Core Modules
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-// import { CoursesModule } from './courses/courses.module';
-// import { ProductsModule } from './products/products.module';
-// import { OrdersModule } from './orders/orders.module';
-// import { PaymentsModule } from './payments/payments.module';
-// import { AnalyticsModule } from './analytics/analytics.module';
-// import { NotificationsModule } from './notifications/notifications.module';
-// import { UploadsModule } from './uploads/uploads.module';
+import { CoursesModule } from './courses/courses.module';
+import { ProductsModule } from './products/products.module';
+import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { UploadsModule } from './uploads/uploads.module';
 import { HealthModule } from './health/health.module';
+import { ChatModule } from './chat/chat.module';
 
-// Tasks (commented out until properly implemented)
-// import { EmailTasksService } from './tasks/email-tasks.service';
-// import { AnalyticsTasksService } from './tasks/analytics-tasks.service';
+// LMS Feature Modules
+import { ReviewsModule } from './reviews/reviews.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { QuizzesModule } from './quizzes/quizzes.module';
+import { LiveSessionsModule } from './live-sessions/live-sessions.module';
+import { GamificationModule } from './gamification/gamification.module';
+import { WishlistModule } from './wishlist/wishlist.module';
+import { CouponsModule } from './coupons/coupons.module';
+import { CertificatesModule } from './certificates/certificates.module';
+import { DiscussionsModule } from './discussions/discussions.module';
+import { AssignmentsModule } from './assignments/assignments.module';
 
-// Gateways (commented out until modules are fixed)
-// import { NotificationsGateway } from './notifications/gateways/notifications.gateway';
-// import { ChatGateway } from './chat/gateways/chat.gateway';
+// Admin & Analytics Modules
+import { AdminModule } from './admin/admin.module';
+import { CampaignsModule } from './campaigns/campaigns.module';
+import { PageTrackingModule } from './page-tracking/page-tracking.module';
+
+// Customer Service Modules
+import { RefundsModule } from './refunds/refunds.module';
+import { AttendanceModule } from './attendance/attendance.module';
+import { SupportModule } from './support/support.module';
+import { AiBotModule } from './ai-bot/ai-bot.module';
+import { SystemConfigModule } from './system-config/system-config.module';
+
+// Entities for Tasks
+import { AnalyticsEvent, AnalyticsEventSchema } from './analytics/entities/analytics.entity';
+
+// Tasks
+import { EmailTasksService } from './tasks/email-tasks.service';
+import { AnalyticsTasksService } from './tasks/analytics-tasks.service';
+
+// Gateways
+import { NotificationsGateway } from './notifications/gateways/notifications.gateway';
+import { ChatGateway } from './chat/gateways/chat.gateway';
+import { AiBotGateway } from './ai-bot/ai-bot.gateway';
 
 @Module({
   imports: [
@@ -58,6 +87,11 @@ import { HealthModule } from './health/health.module';
     // Task scheduling
     ScheduleModule.forRoot(),
 
+    // Register models needed by task services
+    MongooseModule.forFeature([
+      { name: AnalyticsEvent.name, schema: AnalyticsEventSchema },
+    ]),
+
     // Email
     MailerModule.forRootAsync({
       imports: [ConfigModule],
@@ -87,23 +121,49 @@ import { HealthModule } from './health/health.module';
     // Feature modules
     AuthModule,
     UsersModule,
-    // CoursesModule,
-    // ProductsModule,
-    // OrdersModule,
-    // PaymentsModule,
-    // AnalyticsModule,
-    // NotificationsModule,
-    // UploadsModule,
+    CoursesModule,
+    ProductsModule,
+    NotificationsModule,
+    UploadsModule,
+    OrdersModule,
+    PaymentsModule,
+    AnalyticsModule,
     HealthModule,
+    ChatModule,
+
+    // LMS Feature Modules
+    ReviewsModule,
+    EnrollmentsModule,
+    QuizzesModule,
+    LiveSessionsModule,
+    GamificationModule,
+    WishlistModule,
+    CouponsModule,
+    CertificatesModule,
+    DiscussionsModule,
+    AssignmentsModule,
+
+    // Admin & Analytics Modules
+    AdminModule,
+    CampaignsModule,
+    PageTrackingModule,
+
+    // Customer Service Modules
+    RefundsModule,
+    AttendanceModule,
+    SupportModule,
+    AiBotModule,
+    SystemConfigModule,
   ],
   providers: [
-    // Background tasks (commented out until properly implemented)
-    // EmailTasksService,
-    // AnalyticsTasksService,
+    // Background tasks
+    EmailTasksService,
+    AnalyticsTasksService,
     
-    // WebSocket gateways (commented out until modules are fixed)
-    // NotificationsGateway,
-    // ChatGateway,
+    // WebSocket gateways
+    NotificationsGateway,
+    ChatGateway,
+    AiBotGateway,
   ],
 })
 export class AppModule {}

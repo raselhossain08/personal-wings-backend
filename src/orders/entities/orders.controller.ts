@@ -3,10 +3,10 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { OrdersService } from '../orders.service';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
-import { JwtAuthGuard } from '../../../src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../../src/auth/guards/roles.guard';
-import { Roles } from '../../../src/shared/decorators/roles.decorator';
-import { UserRole } from '../../../src/users/entities/user.entity';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Roles } from '../../shared/decorators/roles.decorator';
+import { UserRole } from '../../users/entities/user.entity';
 import { OrderStatus } from './order.entity';
 
 @ApiTags('Orders')

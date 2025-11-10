@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { PaymentsService } from './payments.service';
@@ -17,7 +17,7 @@ import { CoursesModule } from '../courses/courses.module';
       { name: Transaction.name, schema: TransactionSchema },
     ]),
     ConfigModule,
-    OrdersModule,
+    forwardRef(() => OrdersModule),
     CoursesModule,
   ],
   controllers: [PaymentsController],

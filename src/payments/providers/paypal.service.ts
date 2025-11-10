@@ -1,20 +1,38 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as paypal from '@paypal/checkout-server-sdk';
 
 @Injectable()
 export class PayPalService {
-  private client: paypal.core.PayPalHttpClient;
+  private client: paypal.core.PayPalHttpClient | null = null;
+  private readonly logger = new Logger(PayPalService.name);
+  private readonly enabled: boolean;
 
   constructor(private configService: ConfigService) {
-    const environment = new paypal.core.SandboxEnvironment(
-      configService.get('PAYPAL_CLIENT_ID'),
-      configService.get('PAYPAL_CLIENT_SECRET'),
-    );
+    const clientId = configService.get('PAYPAL_CLIENT_ID');
+    const clientSecret = configService.get('PAYPAL_CLIENT_SECRET');
+    
+    if (!clientId || !clientSecret) {
+      this.logger.warn('PayPal credentials not configured. PayPal payments will be disabled.');
+      this.enabled = false;
+      return;
+    }
+    
+    this.enabled = true;
+    const environment = new paypal.core.SandboxEnvironment(clientId, clientSecret);
     this.client = new paypal.core.PayPalHttpClient(environment);
+    this.logger.log('PayPal service initialized successfully');
+  }
+
+  private checkEnabled() {
+    if (!this.enabled || !this.client) {
+      throw new BadRequestException('PayPal payment service is not configured. Please contact support.');
+    }
   }
 
   async createOrder(amount: number, currency: string, items: any[] = []) {
+    this.checkEnabled();
+    
     try {
       const request = new paypal.orders.OrdersCreateRequest();
       request.prefer('return=representation');
@@ -53,7 +71,7 @@ export class PayPalService {
         },
       });
 
-      const response = await this.client.execute(request);
+      const response = await this.client!.execute(request);
       return {
         orderId: response.result.id,
         status: response.result.status,
@@ -65,11 +83,13 @@ export class PayPalService {
   }
 
   async captureOrder(orderId: string) {
+    this.checkEnabled();
+    
     try {
       const request = new paypal.orders.OrdersCaptureRequest(orderId);
       request.prefer('return=representation');
 
-      const response = await this.client.execute(request);
+      const response = await this.client!.execute(request);
       return {
         orderId: response.result.id,
         status: response.result.status,
@@ -82,9 +102,11 @@ export class PayPalService {
   }
 
   async getOrder(orderId: string) {
+    this.checkEnabled();
+    
     try {
       const request = new paypal.orders.OrdersGetRequest(orderId);
-      const response = await this.client.execute(request);
+      const response = await this.client!.execute(request);
       return response.result;
     } catch (error) {
       throw new BadRequestException(`PayPal order retrieval failed: ${error.message}`);
@@ -92,6 +114,8 @@ export class PayPalService {
   }
 
   async createPayout(amount: number, email: string, note: string) {
+    this.checkEnabled();
+    
     try {
       const request = new paypal.payouts.PayoutsPostRequest();
       request.requestBody({
@@ -114,7 +138,7 @@ export class PayPalService {
         ],
       });
 
-      const response = await this.client.execute(request);
+      const response = await this.client!.execute(request);
       return response.result;
     } catch (error) {
       throw new BadRequestException(`PayPal payout failed: ${error.message}`);

@@ -1,11 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-// import { AppModule } from './app.module';
-import { AppModule } from './app-minimal.module';  // Use minimal version temporarily
+import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-// import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
-// import { ResponseInterceptor } from './shared/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { ResponseInterceptor } from './shared/interceptors/response.interceptor';
 
@@ -14,9 +11,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Global filters and interceptors
-  // Global filters and interceptors (commented out for minimal version)
-  // app.useGlobalFilters(new GlobalExceptionFilter(configService));
-  // app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalFilters(new GlobalExceptionFilter(configService));
+  app.useGlobalInterceptors(new ResponseInterceptor());
 
   // Enable CORS
   app.enableCors({

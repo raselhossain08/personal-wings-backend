@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { Product, ProductStatus, ProductType } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { User, UserRole } from '../../src/users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 
 @Injectable()
 export class ProductsService {

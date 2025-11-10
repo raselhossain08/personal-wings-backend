@@ -3,12 +3,12 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { JwtAuthGuard } from '../../src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../src/auth/guards/roles.guard';
-import { Roles } from '../../src/shared/decorators/roles.decorator';
-import { UserRole } from '../../src/users/entities/user.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../shared/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 import { ProductType, ProductStatus } from './entities/product.entity';
-import { Public } from '../../src/shared/decorators/public.decorator';
+import { Public } from '../shared/decorators/public.decorator';
 
 @ApiTags('Products')
 @Controller('products')
